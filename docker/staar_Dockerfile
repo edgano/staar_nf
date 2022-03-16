@@ -1,0 +1,61 @@
+FROM debian:jessie
+LABEL Author="Edgar Garriga Nogales <docker@edgargarriga.com>"
+LABEL Name=projects Version=0.0.1
+LABEL "description"="This container contains STAAR software"
+
+############################ Setup: OS #########################################
+# Set up locales properly
+RUN apt-get update && \
+    apt-get install --yes --no-install-recommends locales && \
+    apt-get purge && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set Language
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+
+# Use bash as default shell, rather than sh
+ENV SHELL /bin/bash
+
+# run critial system updates and add base packages
+RUN apt-get update && apt-get -y install --no-install-recommends --no-install-suggests \
+        ca-certificates software-properties-common gnupg2 gnupg1 \
+      && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
+      && add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/' \
+      && apt-get install r-base \
+        vim-tiny \
+        wget \
+        git \ 
+        build-essential 
+
+# set up a user, to avoid running containers as root
+ENV NB_USER container_user
+ENV HOME /home/${NB_USER}
+RUN adduser --disabled-password \
+    --gecos "Default user" \
+    ${NB_USER}
+
+# set up the user directory structure
+RUN mkdir ${HOME}/tmp && \
+    mkdir ${HOME}/bin && \
+    mkdir ${HOME}/analysis
+ENV PATH ${HOME}/bin:$PATH
+
+############################ Setup: R packages #################################
+USER root
+WORKDIR ${HOME}/tmp
+COPY Rpackages.R ${HOME}/tmp/Rpackages.R
+RUN Rscript ${HOME}/tmp/Rpackages.R
+
+# Install SeqArray package
+RUN R -e "install.packages('remotes')"
+RUN R -e "remotes::install_github('zhengxwen/SeqArray')"
+
+############################ Deployment ########################################
+# set wd to user home
+WORKDIR ${HOME}
