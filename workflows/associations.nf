@@ -1,5 +1,6 @@
 // STAAR docker image 
 //                  docker pull zilinli/staarpipeline:0.9.6
+//                  #docker run -v /media/edgano/24F8A36CF8A33AC6/projects/staar_nf-main/assets:/source -ti zilinli/staarpipeline:0.9.6
 /*
 ========================================================================================
     VALIDATE INPUTS
@@ -27,9 +28,12 @@
         path '*.gds', emit: gds_out
         script:
         """
-        #!/usr/bin/env Rscript
-        
-        seqVCF2GDS($vcf_chr, ${vcf_chr}_out.gds)
+#!/usr/bin/env Rscript
+
+library(SeqArray)
+library(Rcpp)
+
+seqVCF2GDS("${vcf_chr}", "${vcf_chr}_out.gds")
         """
     }
     // Input: GDS files of each chromosome and the FAVOR database information FAVORdatabase_chrsplit.csv. 
@@ -93,7 +97,7 @@
 def multiqc_report = []
 
 // TODO -> this var move at the "validate inputs"
-inputVCF_ch = Channel.fromPath('$projectDir/assets/Interval_WGS_chr20_TF_binding_site_test.vcf')
+inputVCF_ch = Channel.fromPath("$projectDir/assets/Interval_WGS_chr20_TF_binding_site_test.vcf", checkIfExists: true)
 favorDDBB_split_ch = Channel.fromPath('$projectDir/assets/FAVORdatabase_chrsplit.csv.vcf')
 ddbb_path = "/lustre/scratch123/hgi/teams/hgi/mo11/associations/FAVOR/n/holyscratch01/xlin/xihao_zilin/FAVORAnnotatorDB"
 //
