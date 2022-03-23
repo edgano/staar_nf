@@ -7,6 +7,11 @@
 ========================================================================================
 */
 
+// TODO -> nned to find a way of non lustre path ??
+inputVCF_ch = Channel.fromPath("/lustre/scratch123/hgi/teams/hgi/mo11/associations/Interval_WGS_chr20_TF_binding_site_test.vcf.gz", checkIfExists: true)
+//favorDDBB_split_ch = Channel.fromPath('$projectDir/assets/FAVORdatabase_chrsplit.csv.vcf')
+//ddbb_path = "/lustre/scratch123/hgi/teams/hgi/mo11/associations/FAVOR/n/holyscratch01/xlin/xihao_zilin/FAVORAnnotatorDB"
+
 /*
 ========================================================================================
     CONFIG FILES
@@ -96,11 +101,6 @@ seqVCF2GDS("${vcf_chr}", "${vcf_chr}_out.gds")
 // Info required for completion email and summary
 def multiqc_report = []
 
-// TODO -> this var move at the "validate inputs"
-inputVCF_ch = Channel.fromPath("$projectDir/assets/Interval_WGS_chr20_TF_binding_site_test.vcf", checkIfExists: true)
-favorDDBB_split_ch = Channel.fromPath('$projectDir/assets/FAVORdatabase_chrsplit.csv.vcf')
-ddbb_path = "/lustre/scratch123/hgi/teams/hgi/mo11/associations/FAVOR/n/holyscratch01/xlin/xihao_zilin/FAVORAnnotatorDB"
-//
 
 workflow ASSOCIATIONS {
 
