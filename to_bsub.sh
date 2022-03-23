@@ -13,7 +13,7 @@ mkdir -p $TMPDIR
 eval "$(conda shell.bash hook)"
 conda activate nextflow
 
-nextflow run workflows/main.nf \
+nextflow run main.nf \
      --singularity_use_pre_cached_images \
 	 -profile lsf \
 	 -resume
