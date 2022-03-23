@@ -9,6 +9,7 @@
 
 // TODO -> nned to find a way of non lustre path ??
 inputVCF_ch = Channel.fromPath("/lustre/scratch123/hgi/teams/hgi/mo11/associations/Interval_WGS_chr20_TF_binding_site_test.vcf.gz", checkIfExists: true)
+//FAVOR_DB_PATH = '/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/data/FAVOR'
 //favorDDBB_split_ch = Channel.fromPath('$projectDir/assets/FAVORdatabase_chrsplit.csv.vcf')
 //ddbb_path = "/lustre/scratch123/hgi/teams/hgi/mo11/associations/FAVOR/n/holyscratch01/xlin/xihao_zilin/FAVORAnnotatorDB"
 
