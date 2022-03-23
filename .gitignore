@@ -10,3 +10,4 @@ trace*
 notebook/.ipynb_checkpoints
 notebook/.nexflow*
 notebook/results
+*.img
