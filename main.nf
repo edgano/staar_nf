@@ -34,12 +34,14 @@ nextflow.enable.dsl = 2
 */
 
 include { ASSOCIATIONS } from './workflows/associations'
+include { STAAR } from './workflows/staar'
 
 //
 // WORKFLOW: Run main nf-core/associations analysis pipeline
 //
 workflow NFCORE_ASSOCIATIONS {
     ASSOCIATIONS ()
+    //STAAR()
 }
 
 /*

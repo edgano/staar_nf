@@ -7,10 +7,12 @@
 ========================================================================================
 */
 
-// TODO -> nned to find a way of non lustre path ??
+// TODO -> need to find a way of non lustre path ??
 inputVCF_ch = Channel.fromPath("/lustre/scratch123/hgi/teams/hgi/mo11/associations/Interval_WGS_chr20_TF_binding_site_test.vcf.gz", checkIfExists: true)
+
+favorDDBB_split_ch = Channel.fromPath('$projectDir/assets/FAVORdatabase_chrsplit.csv')
+
 //FAVOR_DB_PATH = '/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/data/FAVOR'
-//favorDDBB_split_ch = Channel.fromPath('$projectDir/assets/FAVORdatabase_chrsplit.csv.vcf')
 //ddbb_path = "/lustre/scratch123/hgi/teams/hgi/mo11/associations/FAVOR/n/holyscratch01/xlin/xihao_zilin/FAVORAnnotatorDB"
 
 /*
@@ -34,18 +36,19 @@ inputVCF_ch = Channel.fromPath("/lustre/scratch123/hgi/teams/hgi/mo11/associatio
         path '*.gds', emit: gds_out
         script:
         """
-#!/usr/bin/env Rscript
+        #!/usr/bin/env Rscript
 
-library(SeqArray)
-library(Rcpp)
+        ### R package
+        library(SeqArray)
+        library(Rcpp)
 
-seqVCF2GDS("${vcf_chr}", "${vcf_chr}_out.gds")
+        seqVCF2GDS("${vcf_chr}", "${vcf_chr}_out.gds")
         """
     }
     // Input: GDS files of each chromosome and the FAVOR database information FAVORdatabase_chrsplit.csv. 
     //        For more details, please see the R script.
     // Output: CSV files of the variants list. For each chromosome, the number of CSV files is listed in FAVORdatabase_chrsplit.csv.
-/*
+
     process annotationVariantList {     //Varinfo_gds.R
         input:
         file ddbb_split
@@ -54,9 +57,35 @@ seqVCF2GDS("${vcf_chr}", "${vcf_chr}_out.gds")
         file "*.csv", emit: variantListCSV_out
         script:
         """
+#!/usr/bin/env Rscript
 
+###############################
+#           Input
+###############################
+
+# chr <- as.numeric(commandArgs(TRUE)[1])
+chr <- as.numeric('20')
+
+###############################
+#        Main Function
+###############################
+### R package
+library(gdsfmt)
+library(SeqArray)
+library(SeqVarTools)
+
+### chromosome number
+## read info
+DB_info <- read.csv(file_DBsplit,header=TRUE)
+DB_info <- DB_info[DB_info\$Chr==chr,]
+
+## open GDS
+genofile <- seqOpen(${gds_in})
+
+## TODO -> finish
         """
     }
+    /*
     // Input: CSV files of the variants list to be annotated, the FAVOR database information FAVORdatabase_chrsplit.csv,
     //        the FAVOR database, and the directory xsv software. For more details, please see the R script.
     // Output: CSV files of the annotated variants list.
@@ -100,25 +129,16 @@ seqVCF2GDS("${vcf_chr}", "${vcf_chr}_out.gds")
 // Info -> https://github.com/xihaoli/STAARpipeline-Tutorial
 
 // Info required for completion email and summary
-def multiqc_report = []
+//def multiqc_report = []
 
 
 workflow ASSOCIATIONS {
-
-    // first create a channel for each of the chromosomes.
-    //input_channel = Channel.fromPath(params.input_tsv, followLinks: true, checkIfExists: true)
-    /*channel_input_data_table
-        .splitCsv(header: true, sep: params.inputVCF).map{row->tuple(row.vcf,row.chr )}
-	    .set{vcf_chr}
-        vcf_chr.view()
-
-    */
 
     //STEP 0: VCF to GDS (need only a R function seqVCF2GDS(vcf, gds))
     vcf2gds(inputVCF_ch)
 
     //STEP 1: Generate the variants list to be annotated.
-    //annotationVariantList(favorDDBB_split_ch, vcf2gds.out.gds_out)
+    annotationVariantList(favorDDBB_split_ch, vcf2gds.out.gds_out)
 
     //STEP 2: Annotate the variants using the FAVOR database through xsv software.
     //annotationFAVOR(favorDDBB_split_ch,ddbb_path)
