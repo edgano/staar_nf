@@ -383,7 +383,7 @@ library(SeqVarTools)
 
         results_sliding_window <- c()
 
-        for(kk in 1:5)
+        for(kk in 1:5) # >>  TODO  << it was 1:200  << This should be unrapped
         {
             print(kk)
 
