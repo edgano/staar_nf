@@ -1,1 +1,1 @@
-/nfs/users/nfs_m/mercury/.emacs_en6/scripts/sanger/b_name to_bsub.sh 2 150 yesterday edgar_nf
+/nfs/users/nfs_m/mercury/.emacs_en6/scripts/sanger/b_name to_bsub.sh 2 250 yesterday edgar_nf

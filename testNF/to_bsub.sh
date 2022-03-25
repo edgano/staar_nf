@@ -9,8 +9,7 @@ mkdir -p $SINGULARITY_CACHEDIR
 export TMPDIR="$PWD/tmpdir"
 mkdir -p $TMPDIR
 
-nextflow run main.nf \
+/software/hgi/installs/nextflow run main.nf \
      --singularity_use_pre_cached_images \
 	 -profile lsf \
 	 -resume
-
