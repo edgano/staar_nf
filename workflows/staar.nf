@@ -43,17 +43,16 @@ nameCatalog = Channel
         file "*_num.Rdata", emit: jobs_num
         script:
         """
-#!/usr/bin/env Rscript
+        #!/usr/bin/env Rscript
 
-## load required packages
-library(gdsfmt)
-library(SeqArray)
-library(SeqVarTools)
+        ## load required packages
+        library(gdsfmt)
+        library(SeqArray)
+        library(SeqVarTools)
 
 
         """
     }
-
     // Step 1: Fit STAAR null model
         // Input: Phenotype data and (sparse) genetic relatedness matrix. For more details, please see the R scripts.
         // Output: a Rdata file of the STAAR null model.
@@ -97,6 +96,7 @@ library(SeqVarTools)
 
         """
     }
+
     process fitNullModelGenesis {     
         input:
         file phenotypeCsv
@@ -220,7 +220,6 @@ library(SeqVarTools)
         seqClose(genofile)
         """
     }
-
     // Step 3.1: Gene-centric coding analysis
         // Input: aGDS files and the STAAR null model. For more details, please see the R scripts.
         // Output: 381 Rdata files with the user-defined names. For more details, please see the R scripts.
@@ -229,6 +228,7 @@ library(SeqVarTools)
         // TODO -> gene_num_in_array <- 50  
         //         table(genes_info[,2])
         //  ### exclude large genes     <-- magic numbers
+
     process geneCentricCoding {     
         input:
         file aGDS
@@ -249,7 +249,7 @@ library(SeqVarTools)
 
         """
     }
-/*
+
     process geneCentricCodingLongMask {     
         input:
         file aGDS
@@ -269,13 +269,12 @@ library(SeqVarTools)
         ###############################
         """
     }
-*/
     // Step 3.2: Gene-centric noncoding analysis
         // Input: aGDS files and the STAAR null model. For more details, please see the R scripts.
         // Output: 387 Rdata files with the user-defined names for protein-coding genes and 223 Rdata files with the user-defined names for ncRNA genes. For more details, please see the R scripts.
         // Script: STAARpipeline_Gene_Centric_Noncoding.r, STAARpipeline_Gene_Centric_Noncoding_Long_Masks.r, 
         //          STAARpipeline_Gene_Centric_ncRNA.r and STAARpipeline_Gene_Centric_ncRNA_Long_Masks.r
-/*
+
     process geneCentricNoCoding {     
         input:
         file aGDS
@@ -295,13 +294,11 @@ library(SeqVarTools)
         ###############################
         """
     }
-*/
     // Step 4: Sliding window analysis
         // Input: aGDS files and the STAAR null model. For more details, please see the R script.
         // Output: Rdata files with the user-defined names.
         // Script: STAARpipeline_Sliding_Window.r
-
-        ///nfs/team151/software/STAARpipeline_INTERVAL/final/STAARpipeline_Sliding_Window.R
+        //          /nfs/team151/software/STAARpipeline_INTERVAL/final/STAARpipeline_Sliding_Window.R
 
     process slidingWindow {     
         input:
@@ -353,15 +350,16 @@ library(SeqVarTools)
         
         ##  ## OUTPUT
             ## output path
-        output_path <- paste("/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/results/Sliding_Window/", trait, sep="")
-        cmd <- paste("mkdir", output_path)
-        system(cmd)
+        #output_path <- paste("/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/results/Sliding_Window/", trait, sep="")
+        #cmd <- paste("mkdir", output_path)
+        #system(cmd)
             ## output file name
-        output_file_name <- paste("results_sliding_window_", trait, sep="")
+        output_file_name <- paste("results_sliding_window_", "", sep="")
 
-        ## input array id from batch file 
-        arrayid <- as.numeric(commandArgs(TRUE)[1])     ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
-        
+        ## input array id from batch file               #SBATCH --array=1-573 --mem=11000
+        #arrayid <- as.numeric(commandArgs(TRUE)[1])     ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
+        arrayid <- as.numeric(2)
+
         ###############################
         #        Main Function
         ###############################
