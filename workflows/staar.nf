@@ -383,7 +383,7 @@ library(SeqVarTools)
 
         results_sliding_window <- c()
 
-        for(kk in 1:200)
+        for(kk in 1:5)
         {
             print(kk)
 
@@ -478,29 +478,29 @@ workflow STAAR {
     // first create a channel
 
     //Step 0: Preparation for association analysis of whole-genome/whole-exome sequencing studies
-    analysisPreStep(inputAgds)
+    //analysisPreStep(inputAgds)
 
     //Step 1: Fit STAAR null model
-    fitNullModel(phenoCSV, sGRM)
+    //fitNullModel(phenoCSV, sGRM)
 
     //Step 2: Individual analysis
-    individualAnalysis(aGDS, fitNullModel.out.objNullModel)
+    //individualAnalysis(aGDS, fitNullModel.out.objNullModel)
 
     //Step 3.1: Gene-centric coding analysis
-    geneCentricCoding(aGDS, fitNullModel.out.objNullModel)
+    //geneCentricCoding(aGDS, fitNullModel.out.objNullModel)
 
     //Step 3.2: Gene-centric noncoding analysis
-    geneCentricNoCoding(aGDS, fitNullModel.out.objNullModel)
+    //geneCentricNoCoding(aGDS, fitNullModel.out.objNullModel)
 
     //Step 4: Sliding window analysis
-    slidingWindow(aGDS, fitNullModel.out.objNullModel)
+    //slidingWindow(aGDS, fitNullModel.out.objNullModel)
+    slidingWindow(aGDSdir,nullModel,jobNum,nameCatalog)
 
     // Step 5.0: Obtain SCANG-STAAR null model
-    staar2scang(fitNullModel.out.objNullModel)
+   // staar2scang(fitNullModel.out.objNullModel)
 
     //Step 5: Dynamic window analysis using SCANG-STAAR
-    dynamicWindowSCANG(fitNullModel.out.objNullModel)
-
+    //dynamicWindowSCANG(fitNullModel.out.objNullModel)
 }
 
 /*
