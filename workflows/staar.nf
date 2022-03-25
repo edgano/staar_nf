@@ -406,7 +406,7 @@ nameCatalog = Channel
             }
         }
 
-        save(results_sliding_window, file=paste0(output_path,"/",output_file_name,"_",arrayid,".Rdata"))
+        save(results_sliding_window, file=paste0(".","/",output_file_name,"_",arrayid,".Rdata"))
 
         seqClose(genofile)
         """
