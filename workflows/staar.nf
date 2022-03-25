@@ -315,11 +315,11 @@ library(SeqVarTools)
         """
         #!/usr/bin/env Rscript
 
-        library(gdsfmt, lib="/nfs/team151/software/Rlibs_4.1")
-        library(SeqArray, lib="/nfs/team151/software/Rlibs_4.1")
-        library(SeqVarTools, lib="/nfs/team151/software/Rlibs_4.1")
-        library(STAAR, lib="/nfs/team151/software/Rlibs_4.1")
-        library(STAARpipeline, lib="/nfs/team151/software/Rlibs_4.1")
+        library(gdsfmt")        # modified the library path
+        library(SeqArray")
+        library(SeqVarTools")
+        library(STAAR")
+        library(STAARpipeline")
         ###############################
         #           Input
         ###############################
