@@ -312,7 +312,7 @@ nameCatalog = Channel
         """
         #!/usr/bin/env Rscript
 
-        library(gdsfmt)        # modified the library path
+        library(gdsfmt)        # modified the library path from lustre to docker
         library(SeqArray)
         library(SeqVarTools)
         library(STAAR)
@@ -328,23 +328,28 @@ nameCatalog = Channel
             ## Null Model
         obj_nullmodel <- get(load("${nullModel}"))
 
-        ##  ## LABELS
-        trait <- "fbc_neut"
-            ## QC_label
+        #### LABELS
+        # trait <- "fbc_neut"  # used in #output_path <- paste( .... and not used
+            ## QC_label                 --> used in the TRY
         QC_label <- "annotation/info/QC_label"
-            ## variant_type
+            ## variant_type             --> used in the TRY
         variant_type <- "SNV"
-            ## geno_missing_imputation
+            ## geno_missing_imputation  --> used in the TRY
         geno_missing_imputation <- "mean"
 
         ##  ## ANNOTATION
+# WHY? are thet for input or for output?
             ## Annotation_dir
         Annotation_dir <- "annotation/info/FunctionalAnnotation/FunctionalAnnotation"
             ## Annotation channel
         Annotation_name_catalog <- read.delim("${nameCatalog}")
+
+# boolean by default, maybe can be a param of pipeline ?
             ## Use_annotation_weights
         Use_annotation_weights <- TRUE
-            ## Annotation name
+# same, why? input or output? 
+#   is static?
+            ## Annotation name      ## size = 11
         Annotation_name <- c("CADD","LINSIGHT","FATHMM.XF","aPC.EpigeneticActive","aPC.EpigeneticRepressed","aPC.EpigeneticTranscription",
                             "aPC.Conservation","aPC.LocalDiversity","aPC.Mappability","aPC.TF","aPC.Protein")
         
@@ -354,9 +359,11 @@ nameCatalog = Channel
         #cmd <- paste("mkdir", output_path)
         #system(cmd)
             ## output file name
+# can be defined at the begining of the script
         output_file_name <- paste("results_sliding_window_", "", sep="")
 
-        ## input array id from batch file               #SBATCH --array=1-573 --mem=11000
+## input array id from batch file               
+#    SBATCH --array=1-573 --mem=11000
         #arrayid <- as.numeric(commandArgs(TRUE)[1])     ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
         arrayid <- as.numeric(2)
 
@@ -381,7 +388,8 @@ nameCatalog = Channel
 
         results_sliding_window <- c()
 
-        for(kk in 1:5) # >>  TODO  << it was 1:200  << This should be unrapped
+#>>  TODO  << it was 1:200  << This should be unrapped
+        for(kk in 1:5)              
         {
             print(kk)
 
@@ -389,7 +397,8 @@ nameCatalog = Channel
             end_loc_sub <- end_loc + 1000*25*(kk-1) + 1000
             
             end_loc_sub <- min(end_loc_sub,jobs_num\$end_loc[chr])
-            
+
+# If unwrapped, all the files of results() will need to be merged after the process            
             results <- c()
             if(start_loc_sub < end_loc_sub)
             {
@@ -405,7 +414,7 @@ nameCatalog = Channel
 
             }
         }
-
+# saving path '.' and NF will handle the file
         save(results_sliding_window, file=paste0(".","/",output_file_name,"_",arrayid,".Rdata"))
 
         seqClose(genofile)
