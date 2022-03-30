@@ -581,9 +581,12 @@ workflow STAAR {
     //Step 4: Sliding window analysis
     //slidingWindow(aGDS, fitNullModel.out.objNullModel)
         //slidingWindow(arrayId, aGDSdir,nullModel,jobNum,nameCatalog)
-        phenoCh = arrayId.concat(aGDSdir,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
+	aux_ch = aGDSdir.combine(nullModel)
+	aux_ch.combine(jobNum)
+	aux_ch.combine(nameCatalog)
+        phenoCh = arrayId.combine(aux_ch) //,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
         //TODO -> move kk to chnnel(1..200) to unwrap the for
-            // slidingWindow_ch = slidingWindowPos_ch.concat(phenoCh).view()
+        slidingWindow_ch = slidingWindowPos_ch.combine(phenoCh).view()
             // slidingWindow(slidingWindow_ch)
         //slidingWindow(arrayId)
 
