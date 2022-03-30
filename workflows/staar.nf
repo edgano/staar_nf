@@ -7,6 +7,7 @@
     VALIDATE INPUTS
 ========================================================================================
 */
+
 jobNum = Channel
             .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/jobs_num.Rdata', checkIfExists:true)
 aGDSdir = Channel
@@ -15,6 +16,7 @@ nullModel = Channel
             .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/results/Null_Model/obj.STAAR.fbc_neut.Rdata', checkIfExists:true)
 nameCatalog = Channel
             .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt', checkIfExists:true)
+arrayId = Channel.from( 1..10 ) // 1-573
 /*
 ========================================================================================
     CONFIG FILES
@@ -29,10 +31,19 @@ nameCatalog = Channel
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ========================================================================================
 */
+
+    // Step 0 NF way
+    chr = Channel.from( 1..22 )
+    agdsFiles = Channel.fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/final_release_freeze_GDS/gt_phased_GDS/interval_wgs.chr*.gt_phased.gds')
+
+
+
     // Step 0: Preparation for association analysis of whole-genome/whole-exome sequencing studies
         // Input: aGDS files of all 22 chromosomes. For more details, please see the R script.
         // Output: agds_dir.Rdata, Annotation_name_catalog.Rdata, jobs_num.Rdata.
         // Script: Association_Analysis_PreStep.r
+        // path new script : /nfs/team151/software/STAARpipeline_INTERVAL/final
+
 
     process analysisPreStep {     
         input:
@@ -50,6 +61,64 @@ nameCatalog = Channel
         library(SeqArray)
         library(SeqVarTools)
 
+        ###############################
+        #           Input
+        ###############################
+
+## file directory of aGDS file (genotype and annotation data) 
+dir.geno <- "/lustre/scratch119/realdata/mdt2/projects/interval_wgs/final_release_freeze_GDS/gt_phased_GDS/"
+## file name of aGDS, separate by chr number 
+adgs_file_name_1 <- "interval_wgs.chr"
+agds_file_name_2 <- ".gt_phased.gds"
+## channel name of the QC label in the GDS/aGDS file
+QC_label <- "annotation/info/QC_label"
+## file directory for the output files
+output_path <- "/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/"
+
+
+        ###############################
+        #        Main Function
+        ###############################
+
+#### aGDS directory
+agds_dir <- paste0(dir.geno,adgs_file_name_1,seq(1,22),agds_file_name_2) 
+save(agds_dir,file=paste0(output_path,"agds_dir.Rdata",sep=""))
+
+#### Annotation dir
+Annotation_name_catalog <- "/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt"
+
+#### jobs_num
+jobs_num <- matrix(rep(0,66),nrow=22)
+for(chr in 1:22)
+{
+    print(chr)
+    gds.path <- agds_dir[chr]
+    genofile <- seqOpen(gds.path)
+    
+    filter <- seqGetData(genofile, QC_label)
+    SNVlist <- filter == "PASS" 
+    
+    position <- as.numeric(seqGetData(genofile, "position"))
+    position_SNV <- position[SNVlist]
+    
+    jobs_num[chr,1] <- chr
+    jobs_num[chr,2] <- min(position[SNVlist])
+    jobs_num[chr,3] <- max(position[SNVlist])
+    
+    seqClose(genofile)
+}
+
+# Individual Analysis
+jobs_num <- cbind(jobs_num,ceiling((jobs_num[,3]-jobs_num[,2])/10e6))
+# Sliding Window
+jobs_num <- cbind(jobs_num,ceiling((jobs_num[,3]-jobs_num[,2])/5e6))
+# SCANG
+jobs_num <- cbind(jobs_num,ceiling((jobs_num[,3]-jobs_num[,2])/1.5e6))
+
+colnames(jobs_num) <- c("chr","start_loc","end_loc","individual_analysis_num","sliding_window_num","scang_num")
+jobs_num <- as.data.frame(jobs_num)
+
+save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
 
         """
     }
@@ -149,8 +218,9 @@ nameCatalog = Channel
         input:
         file aGDS           // file or path??
         file nullModel
+        file jobNum
         output:
-
+        file "*_results_individual_analysis.Rdata" , emit:individualAnalysis
         script:
         """
         #!/usr/bin/env Rscript
@@ -164,12 +234,13 @@ nameCatalog = Channel
         ###############################
         #           Input
         ###############################
-        ## Number of jobs for each chromosome
-        jobs_num <- get(load("/path_to_the_file/jobs_num.Rdata"))
-        ## aGDS directory
-        agds_dir <- get(load(\"$aGDS\"))
-        ## Null model
-        obj_nullmodel <- get(load(\"$nullModel\"))
+        ##  ## LOAD R OBJECTS
+            ## job nums
+        jobs_num <- get(load("${jobNum}"))
+            ## agds dir
+        agds_dir <- get(load("${aGDSdir}"))
+            ## Null Model
+        obj_nullmodel <- get(load("${nullModel}"))
 
         ## QC_label
         QC_label <- "annotation/filter"
@@ -183,7 +254,9 @@ nameCatalog = Channel
         ## output file name
         output_file_name <- "TOPMed_F5_LDL_results_individual_analysis"
         ## input array id from batch file (Harvard FAS RC cluster)
-        arrayid <- as.numeric(commandArgs(TRUE)[1])
+# SAME -> need to define the arrayID in a diff way
+        #arrayid <- as.numeric(commandArgs(TRUE)[1])
+        arrayid <- as.numeric(573)
 
         ###############################
         #        Main Function
@@ -192,9 +265,9 @@ nameCatalog = Channel
         group.num <- jobs_num\$individual_analysis_num[chr]
 
         if (chr == 1){
-        groupid <- arrayid
+            groupid <- arrayid
         }else{
-        groupid <- arrayid - cumsum(jobs_num\$individual_analysis_num)[chr-1]
+            groupid <- arrayid - cumsum(jobs_num\$individual_analysis_num)[chr-1]
         }
 
         ### gds file
@@ -302,6 +375,7 @@ nameCatalog = Channel
 
     process slidingWindow {     
         input:
+        val arrayId
         file aGDSdir
         file nullModel
         file jobNum
@@ -311,7 +385,7 @@ nameCatalog = Channel
         script:
         """
         #!/usr/bin/env Rscript
-# modified the library path from lustre to docker
+    # modified the library path from lustre to docker
         library(gdsfmt)        
         library(SeqArray)
         library(SeqVarTools)
@@ -328,10 +402,9 @@ nameCatalog = Channel
             ## Null Model
         obj_nullmodel <- get(load("${nullModel}"))
 
-## defined in the bash 1-573
+    ## defined in the bash 1-573
         ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
-        # shoul be a paramIN
-        arrayid <- as.numeric(573)
+        arrayid <- as.numeric(${arrayId})
 
         #### LABELS
         # trait <- "fbc_neut"  # used in #output_path <- paste( .... and not used
@@ -343,17 +416,17 @@ nameCatalog = Channel
         geno_missing_imputation <- "mean"
 
         ##  ## ANNOTATION
-# WHY? are thet for input or for output?
+    # WHY? are thet for input or for output?
             ## Annotation_dir
         Annotation_dir <- "annotation/info/FunctionalAnnotation/FunctionalAnnotation"
             ## Annotation channel
         Annotation_name_catalog <- read.delim("${nameCatalog}")
 
-# boolean by default, maybe can be a param of pipeline ?
+    # boolean by default, maybe can be a param of pipeline ?
             ## Use_annotation_weights
         Use_annotation_weights <- TRUE
-# same, why? input or output? 
-#   is static?
+    # same, why? input or output? 
+    #   is static?
             ## Annotation name      ## size = 11
         Annotation_name <- c("CADD","LINSIGHT","FATHMM.XF","aPC.EpigeneticActive","aPC.EpigeneticRepressed","aPC.EpigeneticTranscription",
                             "aPC.Conservation","aPC.LocalDiversity","aPC.Mappability","aPC.TF","aPC.Protein")
@@ -364,11 +437,11 @@ nameCatalog = Channel
         #cmd <- paste("mkdir", output_path)
         #system(cmd)
             ## output file name
-# can be defined at the begining of the script
+    # can be defined at the begining of the script
         output_file_name <- paste("results_sliding_window_", "", sep="")
 
-## input array id from batch file               
-#    SBATCH --array=1-573 --mem=11000
+    ## input array id from batch file               
+    #    SBATCH --array=1-573 --mem=11000
         #arrayid <- as.numeric(commandArgs(TRUE)[1])     ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
 
         ###############################
@@ -392,17 +465,17 @@ nameCatalog = Channel
 
         results_sliding_window <- c()
 
-#>>  TODO  << This should be unrapped
+    #>>  TODO  << This should be unrapped
         for(kk in 1:200)              
         {
-            #print(kk)
+            print(kk)
 
             start_loc_sub <- start_loc + 1000*25*(kk-1)
             end_loc_sub <- end_loc + 1000*25*(kk-1) + 1000
             
             end_loc_sub <- min(end_loc_sub,jobs_num\$end_loc[chr])
 
-# If unwrapped, all the files of results() will need to be merged after the process            
+    # If unwrapped, all the files of results() will need to be merged after the process            
             results <- c()
             if(start_loc_sub < end_loc_sub)
             {
@@ -418,7 +491,7 @@ nameCatalog = Channel
 
             }
         }
-# saving path '.' and NF will handle the file
+    # saving path '.' and NF will handle the file
         save(results_sliding_window, file=paste0(".","/",output_file_name,"_",arrayid,".Rdata"))
 
         seqClose(genofile)
@@ -495,7 +568,7 @@ workflow STAAR {
     //fitNullModel(phenoCSV, sGRM)
 
     //Step 2: Individual analysis
-    //individualAnalysis(aGDS, fitNullModel.out.objNullModel)
+    //individualAnalysis(aGDSdir,nullModel,jobNum)
 
     //Step 3.1: Gene-centric coding analysis
     //geneCentricCoding(aGDS, fitNullModel.out.objNullModel)
@@ -505,7 +578,7 @@ workflow STAAR {
 
     //Step 4: Sliding window analysis
     //slidingWindow(aGDS, fitNullModel.out.objNullModel)
-    slidingWindow(aGDSdir,nullModel,jobNum,nameCatalog)
+    slidingWindow(arrayId, aGDSdir,nullModel,jobNum,nameCatalog)
 
     // Step 5.0: Obtain SCANG-STAAR null model
    // staar2scang(fitNullModel.out.objNullModel)

@@ -12,6 +12,8 @@ singularity_cache/
 *.img
 *.log
 
+conf/secrets.config
+
 report*
 trace*
 log
