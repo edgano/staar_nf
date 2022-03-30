@@ -327,7 +327,7 @@ nameCatalog = Channel
         agds_dir <- get(load("${aGDSdir}"))
             ## Null Model
         obj_nullmodel <- get(load("${nullModel}"))
-        
+
             ## defined in the bash 1-573
             ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
             # shoul be a paramIN
@@ -370,7 +370,6 @@ nameCatalog = Channel
 ## input array id from batch file               
 #    SBATCH --array=1-573 --mem=11000
         #arrayid <- as.numeric(commandArgs(TRUE)[1])     ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
-        #arrayid <- as.numeric(2)
 
         ###############################
         #        Main Function
@@ -394,7 +393,7 @@ nameCatalog = Channel
         results_sliding_window <- c()
 
 #>>  TODO  << it was 1:200  << This should be unrapped
-        for(kk in 1:5)              
+        for(kk in 1:200)              
         {
             print(kk)
 
