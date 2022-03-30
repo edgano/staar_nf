@@ -592,8 +592,6 @@ workflow STAAR {
 
     //Step 5: Dynamic window analysis using SCANG-STAAR
     //dynamicWindowSCANG(fitNullModel.out.objNullModel)
-    emit:
-        slidingWindow_out  
 }
 
 /*
