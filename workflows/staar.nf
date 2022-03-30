@@ -311,8 +311,8 @@ nameCatalog = Channel
         script:
         """
         #!/usr/bin/env Rscript
-
-        library(gdsfmt)        # modified the library path from lustre to docker
+# modified the library path from lustre to docker
+        library(gdsfmt)        
         library(SeqArray)
         library(SeqVarTools)
         library(STAAR)
@@ -328,9 +328,9 @@ nameCatalog = Channel
             ## Null Model
         obj_nullmodel <- get(load("${nullModel}"))
 
-            ## defined in the bash 1-573
-            ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
-            # shoul be a paramIN
+## defined in the bash 1-573
+        ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
+        # shoul be a paramIN
         arrayid <- as.numeric(573)
 
         #### LABELS
@@ -392,10 +392,10 @@ nameCatalog = Channel
 
         results_sliding_window <- c()
 
-#>>  TODO  << it was 1:200  << This should be unrapped
+#>>  TODO  << This should be unrapped
         for(kk in 1:200)              
         {
-            print(kk)
+            #print(kk)
 
             start_loc_sub <- start_loc + 1000*25*(kk-1)
             end_loc_sub <- end_loc + 1000*25*(kk-1) + 1000
