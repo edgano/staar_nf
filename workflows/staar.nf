@@ -562,13 +562,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
 
 
 workflow STAAR {
-    take:
-        arrayId
-        aGDSdir
-        nullModel
-        jobNum
-        nameCatalog
-    main:
+
     //Step 0: Preparation for association analysis of whole-genome/whole-exome sequencing studies
     //analysisPreStep(inputAgds)
 
