@@ -17,6 +17,8 @@ nullModel = Channel
 nameCatalog = Channel
             .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt', checkIfExists:true)
 arrayId = Channel.from( 1..10 ) // 1-573
+
+slidingWindowPos_ch = Channel.from( 1..200 ) // for loop slidingWindow
 /*
 ========================================================================================
     CONFIG FILES
@@ -373,7 +375,8 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         // Script: STAARpipeline_Sliding_Window.r
         //          /nfs/team151/software/STAARpipeline_INTERVAL/final/STAARpipeline_Sliding_Window.R
 
-    process slidingWindow {     
+    process slidingWindow {  
+        label 'arrayId - ${arrayId}'   
         input:
         val arrayId
         file aGDSdir
@@ -381,7 +384,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         file jobNum
         file nameCatalog
         output:
-
+        file "results_sliding_window_*.Rdata", emit: slidingWindow_out
         script:
         """
         #!/usr/bin/env Rscript
@@ -466,6 +469,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         results_sliding_window <- c()
 
     #>>  TODO  << This should be unrapped
+    # Why it is 200 and not 2k ? -> this can be unwrapped with a ch.value(1..200)
         for(kk in 1:200)              
         {
             print(kk)
@@ -558,9 +562,13 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
 
 
 workflow STAAR {
-
-    // first create a channel
-
+    take:
+        arrayId
+        aGDSdir
+        nullModel
+        jobNum
+        nameCatalog
+    main:
     //Step 0: Preparation for association analysis of whole-genome/whole-exome sequencing studies
     //analysisPreStep(inputAgds)
 
@@ -578,13 +586,20 @@ workflow STAAR {
 
     //Step 4: Sliding window analysis
     //slidingWindow(aGDS, fitNullModel.out.objNullModel)
-    slidingWindow(arrayId, aGDSdir,nullModel,jobNum,nameCatalog)
+        //slidingWindow(arrayId, aGDSdir,nullModel,jobNum,nameCatalog)
+        phenoCh = arrayId.concat(aGDSdir,nullModel,jobNum,nameCatalog)    //try to concat to "expand" the arrayId 
+        //TODO -> move kk to chnnel(1..200) to unwrap the for
+            // slidingWindow_ch = slidingWindowPos_ch.concat(phenoCh).view()
+            // slidingWindow(slidingWindow_ch)
+        slidingWindow(arrayId)
 
     // Step 5.0: Obtain SCANG-STAAR null model
    // staar2scang(fitNullModel.out.objNullModel)
 
     //Step 5: Dynamic window analysis using SCANG-STAAR
     //dynamicWindowSCANG(fitNullModel.out.objNullModel)
+    emit:
+        slidingWindow_out  
 }
 
 /*
