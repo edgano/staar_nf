@@ -16,9 +16,9 @@ nullModel = Channel
             .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/results/Null_Model/obj.STAAR.fbc_neut.Rdata', checkIfExists:true)
 nameCatalog = Channel
             .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt', checkIfExists:true)
-arrayId = Channel.from( 1..10 ) // 1-573
+arrayId = Channel.from( 1..5 ) // 1-573
 
-slidingWindowPos_ch = Channel.from( 1..200 ) // for loop slidingWindow
+slidingWindowPos_ch = Channel.from( 1..2 ) // for loop slidingWindow 1-200
 /*
 ========================================================================================
     CONFIG FILES
@@ -587,11 +587,11 @@ workflow STAAR {
     //Step 4: Sliding window analysis
     //slidingWindow(aGDS, fitNullModel.out.objNullModel)
         //slidingWindow(arrayId, aGDSdir,nullModel,jobNum,nameCatalog)
-        phenoCh = arrayId.concat(aGDSdir,nullModel,jobNum,nameCatalog)    //try to concat to "expand" the arrayId 
+        phenoCh = arrayId.concat(aGDSdir,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
         //TODO -> move kk to chnnel(1..200) to unwrap the for
             // slidingWindow_ch = slidingWindowPos_ch.concat(phenoCh).view()
             // slidingWindow(slidingWindow_ch)
-        slidingWindow(arrayId)
+        //slidingWindow(arrayId)
 
     // Step 5.0: Obtain SCANG-STAAR null model
    // staar2scang(fitNullModel.out.objNullModel)
