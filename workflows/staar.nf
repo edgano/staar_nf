@@ -1,3 +1,4 @@
+#!/bin/bash nextflow
 
 // STAAR docker image 
 //                  docker pull zilinli/staarpipeline:0.9.6
@@ -376,16 +377,15 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         //          /nfs/team151/software/STAARpipeline_INTERVAL/final/STAARpipeline_Sliding_Window.R
 
     process slidingWindow {  
-        tag "arrayId - ${arrayId}"
+        tag "arrayId - $arrayId"
         input:
-        val arrayId
-        val slidingPos
+        tuple val (arrayId), val (slidingPos)
         file aGDSdir
         file nullModel
         file jobNum
         file nameCatalog
         output:
-        file "results_sliding_window_*.Rdata", emit: slidingWindow_out
+        file "*.Rdata", emit: slidingWindow_out
         script:
         """
         #!/usr/bin/env Rscript
@@ -565,7 +565,11 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
 
 
 workflow STAAR {
+    take:
+        arrayId
+        slidingWindowPos_ch
 
+    main:
     //Step 0: Preparation for association analysis of whole-genome/whole-exome sequencing studies
     //analysisPreStep(inputAgds)
 
@@ -591,7 +595,8 @@ workflow STAAR {
     //phenoCh = arrayId.combine(aux_ch) //,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
         //TODO -> move kk to chnnel(1..200) to unwrap the for
     slidingWindow_ch = arrayId.combine(slidingWindowPos_ch).view()
-    slidingWindow(slidingWindow_ch)
+
+    slidingWindow(slidingWindow_ch,aGDSdir,nullModel,jobNum,nameCatalog)
         //slidingWindow(arrayId)
 
     // Step 5.0: Obtain SCANG-STAAR null model
