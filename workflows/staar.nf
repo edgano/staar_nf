@@ -376,7 +376,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         //          /nfs/team151/software/STAARpipeline_INTERVAL/final/STAARpipeline_Sliding_Window.R
 
     process slidingWindow {  
-        label "arrayId - ${arrayId}"
+        tag "arrayId - ${arrayId}"
         input:
         val arrayId
         val slidingPos
