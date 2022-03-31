@@ -410,7 +410,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
         arrayid <- as.numeric(${arrayId})
 
-        kk <- as.numeric(${slidingPos})
+        #kk <- as.numeric(${slidingPos})
 
         #### LABELS
         # trait <- "fbc_neut"  # used in #output_path <- paste( .... and not used
@@ -589,10 +589,10 @@ workflow STAAR {
     //slidingWindow(aGDS, fitNullModel.out.objNullModel)
         //slidingWindow(arrayId, aGDSdir,nullModel,jobNum,nameCatalog)
 	aux_ch = aGDSdir.combine(nullModel)
-	aux_ch.combine(jobNum)
-    aux_ch.combine(nameCatalog)
+	aux2 = aux_ch.combine(jobNum)
+    aux3 = aux2.combine(nameCatalog)
     
-    phenoCh = arrayId.combine(aux_ch).view() //,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
+    phenoCh = arrayId.combine(aux3).view() //,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
         //TODO -> move kk to chnnel(1..200) to unwrap the for
     //slidingWindow_ch = arrayId.combine(slidingWindowPos_ch).view()
 
