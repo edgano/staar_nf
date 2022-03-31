@@ -410,7 +410,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
         arrayid <- as.numeric(${arrayId})
 
-        #kk <- as.numeric(${slidingPos})
+        # kk <- as.numeric(${slidingPos})
 
         #### LABELS
         # trait <- "fbc_neut"  # used in #output_path <- paste( .... and not used
