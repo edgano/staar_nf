@@ -256,7 +256,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         ## output file name
         output_file_name <- "TOPMed_F5_LDL_results_individual_analysis"
         ## input array id from batch file (Harvard FAS RC cluster)
-# SAME -> need to define the arrayID in a diff way
+        # SAME -> need to define the arrayID in a diff way
         #arrayid <- as.numeric(commandArgs(TRUE)[1])
         arrayid <- as.numeric(573)
 
@@ -379,6 +379,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         label 'arrayId - ${arrayId}'   
         input:
         val arrayId
+        val slidingPos
         file aGDSdir
         file nullModel
         file jobNum
@@ -408,6 +409,8 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
     ## defined in the bash 1-573
         ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
         arrayid <- as.numeric(${arrayId})
+
+        kk <- as.numeric(${slidingPos})
 
         #### LABELS
         # trait <- "fbc_neut"  # used in #output_path <- paste( .... and not used
@@ -470,8 +473,8 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
 
     #>>  TODO  << This should be unrapped
     # Why it is 200 and not 2k ? -> this can be unwrapped with a ch.value(1..200)
-        for(kk in 1:200)              
-        {
+        #for(kk in 1:200)              
+        #{
             print(kk)
 
             start_loc_sub <- start_loc + 1000*25*(kk-1)
@@ -479,7 +482,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
             
             end_loc_sub <- min(end_loc_sub,jobs_num\$end_loc[chr])
 
-    # If unwrapped, all the files of results() will need to be merged after the process            
+            # If unwrapped, all the files of results() will need to be merged after the process            
             results <- c()
             if(start_loc_sub < end_loc_sub)
             {
@@ -494,7 +497,7 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
                 }
 
             }
-        }
+        #}
     # saving path '.' and NF will handle the file
         save(results_sliding_window, file=paste0(".","/",output_file_name,"_",arrayid,".Rdata"))
 
@@ -581,14 +584,14 @@ workflow STAAR {
     //Step 4: Sliding window analysis
     //slidingWindow(aGDS, fitNullModel.out.objNullModel)
         //slidingWindow(arrayId, aGDSdir,nullModel,jobNum,nameCatalog)
-	aux_ch = aGDSdir.combine(nullModel)
-	aux_ch.combine(jobNum)
-	aux_ch.combine(nameCatalog)
+	//aux_ch = aGDSdir.combine(nullModel)
+	//aux_ch.combine(jobNum)
+	//aux_ch.combine(nameCatalog)
     
-    phenoCh = arrayId.combine(aux_ch) //,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
+    //phenoCh = arrayId.combine(aux_ch) //,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
         //TODO -> move kk to chnnel(1..200) to unwrap the for
-        slidingWindow_ch = phenoCh.combine(slidingWindowPos_ch).view()
-            // slidingWindow(slidingWindow_ch)
+    slidingWindow_ch = arrayId.combine(slidingWindowPos_ch).view()
+    slidingWindow(slidingWindow_ch)
         //slidingWindow(arrayId)
 
     // Step 5.0: Obtain SCANG-STAAR null model
