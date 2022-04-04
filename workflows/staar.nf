@@ -8,19 +8,36 @@
     VALIDATE INPUTS
 ========================================================================================
 */
+    // Step 0 NF way
+    chr = Channel.from( 1..22 )
+    /*agdsFiles = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/final_release_freeze_GDS/gt_phased_GDS/interval_wgs.chr*.gt_phased.gds')
 
-jobNum = Channel
-            .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/jobs_num.Rdata', checkIfExists:true)
-aGDSdir = Channel
-            .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/agds_dir.Rdata', checkIfExists:true)
-nullModel = Channel
-            .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/results/Null_Model/obj.STAAR.fbc_neut.Rdata', checkIfExists:true)
-nameCatalog = Channel
-            .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt', checkIfExists:true)
-arrayId = Channel.from( 1..5 ) // 1-573
+    jobNum = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/jobs_num.Rdata', checkIfExists:true)
+    aGDSdir = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/agds_dir.Rdata', checkIfExists:true)
+    nullModel = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/results/Null_Model/obj.STAAR.fbc_neut.Rdata', checkIfExists:true)
+    nameCatalog = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt', checkIfExists:true)
+   */ 
+    arrayId = Channel.from( 1..10 ) // 1-573
 
-slidingWindowPos_ch = Channel.from( 1..2 ) // for loop slidingWindow 1-200
-/*
+    slidingWindowPos_ch = Channel.from( 1..2 ) // for loop slidingWindow 1-200
+
+
+    agdsFiles = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/final_release_freeze_GDS/gt_phased_Ensembl_regulatory_build/GDS_files/*.gds', checkIfExists:true)
+    aGDSdir = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input_test/agds_dir.Rdata', checkIfExists:true)
+    jobNum = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input_test/jobs_num.Rdata', checkIfExists:true)
+    nullModel = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/results/Null_Model/obj.STAAR.fbc_neut.Rdata', checkIfExists:true)
+    nameCatalog = Channel
+                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt', checkIfExists:true)
+    /*
 ========================================================================================
     CONFIG FILES
 ========================================================================================
@@ -34,12 +51,6 @@ slidingWindowPos_ch = Channel.from( 1..2 ) // for loop slidingWindow 1-200
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ========================================================================================
 */
-
-    // Step 0 NF way
-    chr = Channel.from( 1..22 )
-    agdsFiles = Channel.fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/final_release_freeze_GDS/gt_phased_GDS/interval_wgs.chr*.gt_phased.gds')
-
-
 
     // Step 0: Preparation for association analysis of whole-genome/whole-exome sequencing studies
         // Input: aGDS files of all 22 chromosomes. For more details, please see the R script.
@@ -410,7 +421,6 @@ save(jobs_num,file=paste0(output_path,"jobs_num.Rdata",sep=""))
         ## from 1 to max(cumsum(jobs_num\$sliding_window_num)) which is 573
         arrayid <- as.numeric(${arrayId})
 
-        # kk <- as.numeric(${slidingPos})
 
         #### LABELS
         # trait <- "fbc_neut"  # used in #output_path <- paste( .... and not used
