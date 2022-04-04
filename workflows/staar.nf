@@ -9,7 +9,7 @@
 ========================================================================================
 */
     // Step 0 NF way
-    chr = Channel.from( 1..22 )
+    chr_ch = Channel.from( 1..22 )
     /*agdsFiles = Channel
                     .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/final_release_freeze_GDS/gt_phased_GDS/interval_wgs.chr*.gt_phased.gds')
 
@@ -22,21 +22,20 @@
     nameCatalog = Channel
                     .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt', checkIfExists:true)
    */ 
-    arrayId = Channel.from( 1..10 ) // 1-573
+    arrayId_ch = Channel.from( 1..10 ) // 1-573
 
     slidingWindowPos_ch = Channel.from( 1..2 ) // for loop slidingWindow 1-200
 
-
-    agdsFiles = Channel
-                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/final_release_freeze_GDS/gt_phased_Ensembl_regulatory_build/GDS_files/*.gds', checkIfExists:true)
-    aGDSdir = Channel
-                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input_test/agds_dir.Rdata', checkIfExists:true)
-    jobNum = Channel
-                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input_test/jobs_num.Rdata', checkIfExists:true)
-    nullModel = Channel
-                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/results/Null_Model/obj.STAAR.fbc_neut.Rdata', checkIfExists:true)
-    nameCatalog = Channel
-                    .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt', checkIfExists:true)
+    agdsFiles_ch = Channel
+                    .fromPath(params.agdsFiles, checkIfExists:true)
+    aGDSdir_ch = Channel
+                    .fromPath(params.aGDSdir, checkIfExists:true)
+    jobNum_ch = Channel
+                    .fromPath(params.jobNum, checkIfExists:true)
+    nullModel_ch = Channel
+                    .fromPath(params.nullModel, checkIfExists:true)
+    nameCatalog_ch = Channel
+                    .fromPath(params.nameCatalog, checkIfExists:true)
     /*
 ========================================================================================
     CONFIG FILES
@@ -598,11 +597,11 @@ workflow STAAR {
     //Step 4: Sliding window analysis
     //slidingWindow(aGDS, fitNullModel.out.objNullModel)
         //slidingWindow(arrayId, aGDSdir,nullModel,jobNum,nameCatalog)
-	aux_ch = aGDSdir.combine(nullModel)
-	aux2 = aux_ch.combine(jobNum)
-    aux3 = aux2.combine(nameCatalog)
+	aux_ch = aGDSdir_ch.combine(nullModel_ch)
+	aux2 = aux_ch.combine(jobNum_ch)
+    aux3 = aux2.combine(nameCatalog_ch)
     
-    phenoCh = arrayId.combine(aux3).view() //,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
+    phenoCh = arrayId_ch.combine(aux3).view() //,nullModel,jobNum,nameCatalog).view()    //try to concat to "expand" the arrayId 
         //TODO -> move kk to chnnel(1..200) to unwrap the for
     //slidingWindow_ch = arrayId.combine(slidingWindowPos_ch).view()
 
