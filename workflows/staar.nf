@@ -22,7 +22,7 @@
     nameCatalog = Channel
                     .fromPath('/lustre/scratch119/realdata/mdt2/projects/interval_wgs/analysis/STAARpipeline/data/input/Annotation_name_catalog.txt', checkIfExists:true)
    */ 
-    arrayId_ch = Channel.from( 1..10 ) // 1-573
+    arrayId_ch = Channel.from( 1..2 ) // 1-573 phenotypes
 
     slidingWindowPos_ch = Channel.from( 1..2 ) // for loop slidingWindow 1-200
 
